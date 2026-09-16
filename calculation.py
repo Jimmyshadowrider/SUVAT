@@ -1,72 +1,120 @@
 import math
 
 
-def formula_1(vals, target):
+def formula_1(target, u=0, v=0, a=0, t=0):
     """v = u + a·t"""
-    if target == 'v': return vals['u'] + vals['a'] * vals['t']
-    if target == 'u': return vals['v'] - vals['a'] * vals['t']
+    if target == 'v':
+        return u + a * t
+    if target == 'u':
+        return v - a * t
     if target == 'a':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return (vals['v'] - vals['u']) / vals['t']
+        if t == 0:
+            raise ValueError("Time (t) cannot be zero when solving for a.")
+        return (v - u) / t
     if target == 't':
-        if vals['a'] == 0: raise ValueError("a cannot be zero")
-        return (vals['v'] - vals['u']) / vals['a']
+        if a == 0:
+            raise ValueError(
+                "Acceleration (a) cannot be zero when solving for t."
+            )
+        return (v - u) / a
+    raise ValueError(f"Invalid target: {target}")
 
 
-def formula_2(vals, target):
+def formula_2(target, u=0, v=0, s=0, t=0):
     """s = ((u + v) / 2) · t"""
-    if target == 's': return (vals['u'] + vals['v']) / 2 * vals['t']
+    if target == 's':
+        return 0.5 * (u + v) * t
     if target == 'u':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return (2 * vals['s'] / vals['t']) - vals['v']
+        if t == 0:
+            raise ValueError("Time (t) cannot be zero when solving for u.")
+        return (2 * s / t) - v
     if target == 'v':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return (2 * vals['s'] / vals['t']) - vals['u']
+        if t == 0:
+            raise ValueError("Time (t) cannot be zero when solving for v.")
+        return (2 * s / t) - u
     if target == 't':
-        if (vals['u'] + vals['v']) == 0: raise ValueError("u + v cannot be zero")
-        return 2 * vals['s'] / (vals['u'] + vals['v'])
+        if (u + v) == 0:
+            raise ValueError(
+                "Sum of velocities (u + v) cannot be zero when solving for t."
+            )
+        return (2 * s) / (u + v)
+    raise ValueError(f"Invalid target: {target}")
 
 
-def formula_3(vals, target):
-    """s = u·t + ½·a·t²"""
-    if target == 's': return vals['u'] * vals['t'] + 0.5 * vals['a'] * vals['t'] ** 2
+def formula_3(target, u=0,a=0, s=0, t=0):
+    """s = u·t + (1/2)·a·t²"""
+    if target == 's':
+        return u * t + 0.5 * a * t**2
     if target == 'u':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return (vals['s'] - 0.5 * vals['a'] * vals['t'] ** 2) / vals['t']
+        if t == 0:
+            raise ValueError("Time (t) cannot be zero when solving for u.")
+        return (s - 0.5 * a * t**2) / t
     if target == 'a':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return 2 * (vals['s'] - vals['u'] * vals['t']) / vals['t'] ** 2
+        if t == 0:
+            raise ValueError("Time (t) cannot be zero when solving for a.")
+        return 2 * (s - u * t) / (t**2)
     if target == 't':
-        A, B, C = 0.5 * vals['a'], vals['u'], -vals['s']
-        return _quadratic(A, B, C)
+        if a == 0:
+            if u == 0:
+                raise ValueError("Cannot solve for t when both a and u are 0.")
+            return s / u
+
+        discriminant = u**2 + 2 * a * s
+        if discriminant < 0:
+            raise ValueError("No real solution for time (t).")
+
+        t1 = (-u + math.sqrt(discriminant)) / a
+        t2 = (-u - math.sqrt(discriminant)) / a
+        positives = [val for val in (t1, t2) if val >= 0]
+
+        if not positives:
+            raise ValueError("No non-negative time solution exists.")
+        return min(positives)
+
+    raise ValueError(f"Invalid target: {target}")
 
 
-def formula_4(vals, target):
+def formula_4(target,v=0,a=0,s=0,t=0):
     """s = v·t − ½·a·t²"""
-    if target == 's': return vals['v'] * vals['t'] - 0.5 * vals['a'] * vals['t'] ** 2
+    if target == 's': return v*t - 0.5 *a*(t**2)
     if target == 'v':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return (vals['s'] + 0.5 * vals['a'] * vals['t'] ** 2) / vals['t']
+        if t == 0: raise ValueError("t cannot be zero")
+        return (s+ 0.5 * a * (t**2)) / t
     if target == 'a':
-        if vals['t'] == 0: raise ValueError("t cannot be zero")
-        return 2 * (vals['v'] * vals['t'] - vals['s']) / vals['t'] ** 2
+        if t == 0: raise ValueError("t cannot be zero")
+        return 2 * (v * t - s) / (t ** 2)
     if target == 't':
         # s = v·t − ½·a·t²  →  −½·a·t² + v·t − s = 0
-        A, B, C = -0.5 * vals['a'], vals['v'], -vals['s']
+        A, B, C = -0.5 * a, v, -1*s
         return _quadratic(A, B, C)
+    raise ValueError(f"Invalid target: {target}")
 
 
-def formula_5(vals, target):
+def formula_5(target, u=0, v=0, a=0, s=0):
     """v² = u² + 2·a·s"""
-    if target == 'v': return math.sqrt(vals['u'] ** 2 + 2 * vals['a'] * vals['s'])
-    if target == 'u': return math.sqrt(vals['v'] ** 2 - 2 * vals['a'] * vals['s'])
+    if target == 'v':
+        val = u**2 + 2 * a * s
+        if val < 0:
+            raise ValueError("Resulting v² is negative; no real solution.")
+        return math.sqrt(val)
+    if target == 'u':
+        val = v**2 - 2 * a * s
+        if val < 0:
+            raise ValueError("Resulting u² is negative; no real solution.")
+        return math.sqrt(val)
     if target == 'a':
-        if vals['s'] == 0: raise ValueError("s cannot be zero")
-        return (vals['v'] ** 2 - vals['u'] ** 2) / (2 * vals['s'])
+        if s == 0:
+            raise ValueError(
+                "Displacement (s) cannot be zero when solving for a."
+            )
+        return (v**2 - u**2) / (2 * s)
     if target == 's':
-        if vals['a'] == 0: raise ValueError("a cannot be zero")
-        return (vals['v'] ** 2 - vals['u'] ** 2) / (2 * vals['a'])
-
+        if a == 0:
+            raise ValueError(
+                "Acceleration (a) cannot be zero when solving for s."
+            )
+        return (v**2 - u**2) / (2 * a)
+    raise ValueError(f"Invalid target: {target}")
 
 def _quadratic(A, B, C):
     """Solve A·x² + B·x + C = 0, return list of real non-negative roots."""
@@ -81,13 +129,13 @@ def _quadratic(A, B, C):
 
 
 
-FORMULAS = {
-    '1': ("v = u + a·t",            formula_1, "uvat"),
-    '2': ("s = ((u+v)/2)·t",        formula_2, "suvt"),
-    '3': ("s = u·t + ½·a·t²",       formula_3, "suat"),
-    '4': ("s = v·t − ½·a·t²",       formula_4, "svat"),
-    '5': ("v² = u² + 2·a·s",        formula_5, "uvas"),
-}
+# FORMULAS = {
+#     '1': ("v = u + a·t",            formula_1, "uvat"),
+#     '2': ("s = ((u+v)/2)·t",        formula_2, "suvt"),
+#     '3': ("s = u·t + ½·a·t²",       formula_3, "suat"),
+#     '4': ("s = v·t − ½·a·t²",       formula_4, "svat"),
+#     '5': ("v² = u² + 2·a·s",        formula_5, "uvas"),
+# }
 
 # def main():
 #     print("Available formulas:")
