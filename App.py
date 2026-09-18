@@ -15,7 +15,7 @@ class App(tk.Tk):
         y = (screen_height - self.winfo_reqheight()) // 2
         self.geometry(f"+{x-100}+{y}")
         photo = tk.PhotoImage(file = 'SUVAT.png')
-        self.iconphoto(False,photo)
+        self.iconphoto(False,photo, photo)
         
         # Container to hold all stacked frames
         container = tk.Frame(self)
@@ -106,7 +106,7 @@ class HomePage(tk.Frame):
         
         btn5 = tk.Button(
             self.frame, 
-            text="s = v·t − ½·a·t²", 
+            text="v² = u² + 2·a·s", 
             font= ("Arial", 20),
             bg='pink',
             command=lambda: controller.show_frame(Move5)
@@ -665,9 +665,9 @@ class Move5(tk.Frame):
 
             mapping = {
                 self.find[0]: 'u',
-                self.find[1]: 'v',
-                self.find[2]: 'a',
-                self.find[3]: 's',
+                self.find[1]: 'a',
+                self.find[2]: 's',
+                self.find[3]: 't',
             }
             
             self.value = mapping.get(value2, 'None')
